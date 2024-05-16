@@ -1,6 +1,6 @@
 [package]
 name = "dtmf"
-version = "0.0.1"
+version = "0.0.2"
 description = "A dtmf encoder"
 authors = ["YouXam <youxam@outlook.com>"]
 edition = "2021"
