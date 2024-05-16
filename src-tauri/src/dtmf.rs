@@ -46,7 +46,7 @@ pub fn save(path: &str, s: &str) -> anyhow::Result<()> {
     let mut writer = WavWriter::create(path, spec).unwrap();
     for c in s.chars() {
         let freqs = find_freqs(c)?;
-        let length = (SAMPLE_RATE as f32 * 0.2) as u32;
+        let length = (SAMPLE_RATE as f32 * 0.05) as u32;
         write_tone(&mut writer, length, freqs)?;
         write_silence(&mut writer, length);
     }
