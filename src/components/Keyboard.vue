@@ -1,9 +1,12 @@
 <template>
-    <div class="h-[calc(100vh-304px)] w-full bg-white dark:bg-gray-900 text-black dark:text-white text-center text-4xl flex items-center justify-center break-words whitespace-normal break-all px-5 py-10 overflow-y-scroll">
+    <div class="h-[calc(100vh-304px)] relative w-full bg-white dark:bg-gray-900 text-black dark:text-white text-center text-4xl flex items-center justify-center break-words whitespace-normal break-all px-5 py-10 overflow-none">
         <span v-if="value">{{ value }}</span>
-        <span v-else class="text-gray-400 text-xl">使用按钮或键盘输入</span>
+        <span v-else class="text-gray-400 text-xl">使用按钮或键盘输入以开始</span>
     </div>
-    <div class="h-6 text-center text-gray-400 text-xs pt-2 bg-white dark:bg-gray-900 dark:text-gray-600">
+    <div v-if="error" class="h-6 bg-white dark:bg-gray-900 text-red-500 text-center text-sm">
+        {{ error }}
+    </div>
+    <div v-else class="h-6 text-center text-gray-400 text-xs  bg-white dark:bg-gray-900 dark:text-gray-600">
         © 
         <a href="https://github.com/youxam" target="_blank">YouXam</a>
     </div> 
@@ -59,8 +62,9 @@
     </div>
     <div class="grid grid-cols-3">
         <button
-            @click="value = value.slice(0, -1)"
-            class="font-medium py-4 px-6 w-full space-x-3 bg-[#743ee4] text-white hover:bg-[#8150e6] active:bg-[#6a3ad9] focus:outline-none focus:ring focus:ring-[#8150e6]">
+            @click="error = '', value = value.slice(0, -1)"
+            :disabled="!value"
+            class="font-medium py-4 px-6 w-full space-x-3 bg-[#743ee4] text-white hover:bg-[#8150e6] active:bg-[#6a3ad9] outline-none ring-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#743ee4] disabled:active:bg-[#743ee4]">
             <FontAwesomeIcon :icon="['fas', 'delete-left']" />
             <span>
                 退格
@@ -68,7 +72,8 @@
         </button>
         <button
             @click="clear"
-            class="font-medium py-4 px-6 w-full space-x-3 bg-[#ff4d4f] text-white hover:bg-[#ff5b5d] active:bg-[#e63a3c] focus:outline-none focus:ring focus:ring-[#ff5b5d]">
+            :disabled="!value"
+            class="font-medium py-4 px-6 w-full space-x-3 bg-[#ff4d4f] text-white hover:bg-[#ff5b5d] active:bg-[#e63a3c] outline-none ring-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#ff4d4f] disabled:active:bg-[#ff4d4f]">
             <FontAwesomeIcon :icon="['fas', 'trash']" />
             <span>
                 清空
@@ -77,7 +82,8 @@
 
         <button
             @click="saveFile"
-            class="w-full space-x-3 bg-[#3662e3] text-white hover:bg-[#4871e5] active:bg-[#2a4bba] focus:outline-none focus:ring focus:ring-[#4871e5]">
+            :disabled="!value"
+            class="w-full space-x-3 bg-[#3662e3] text-white hover:bg-[#4871e5] active:bg-[#2a4bba] outline-none ring-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#3662e3] disabled:active:bg-[#3662e3]">
             <FontAwesomeIcon :icon="['fas', 'file-arrow-down']" />
             <span>
                 保存
@@ -93,7 +99,9 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { save } from '@tauri-apps/api/dialog';
 import { invoke } from '@tauri-apps/api/tauri';
 const value = ref('')
+const error = ref('')
 function clear() {
+    error.value = ''
     value.value = ''
 }
 
@@ -110,6 +118,7 @@ async function playWav(wav: ArrayBuffer) {
         console.error('Error with decoding audio data', error);
     }
 }
+
 async function play(v: string) {
     try {
         const wav: number[] = await invoke('tone', { char: v })
@@ -117,11 +126,17 @@ async function play(v: string) {
         await playWav(wavBuffer.buffer)
     } catch (e) {
         console.error(e)
+        error.value = '播放失败: ' + ((e as Error).message || (e as any)?.toString() || '未知错误')
     }
 }
 function append(v: string) {
-    value.value += v
-    play(v)
+    error.value = ''
+    if (value.value.length <= 80) {
+        value.value += v
+        play(v)
+    } else {
+        error.value = '长度已达到上限'
+    }
 }
 async function saveFile() {
     const filePath = await save({
@@ -130,9 +145,22 @@ async function saveFile() {
             extensions: ['wav']
         }]
     })
-    await invoke('save', { path: filePath, value: value.value })
+    if (!filePath) return
+    try {
+        await invoke('save', { path: filePath, value: value.value })
+    } catch (e) {
+        console.error(e)
+        error.value = '保存失败: ' + ((e as Error).message || (e as any)?.toString() || '未知错误')
+    }
+    try {
+        await invoke('show_item_in_folder', { path: filePath })
+    } catch (e) {
+        console.error(e)
+        error.value = '打开文件夹失败: ' + ((e as Error).message || (e as any)?.toString() || '未知错误') + '，请手动打开'
+    }
 }
 function hanlder(e: KeyboardEvent) {
+    error.value = ''
     const key = e.key
     if (['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '*', '#', 'A', 'B', 'C', 'D', 'a', 'b', 'c', 'd'].includes(key)) {
         append(key.toUpperCase())

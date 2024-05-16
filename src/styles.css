@@ -2,3 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+button {
+    border: none;
+    outline: none;
+    box-shadow: none;
+    background: none;
+    padding: 0;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
