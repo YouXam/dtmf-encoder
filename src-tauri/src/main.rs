@@ -6,6 +6,10 @@ mod open;
 
 #[cfg(target_os = "linux")]
 pub struct DbusState(Mutex<Option<dbus::blocking::SyncConnection>>);
+#[cfg(target_os = "linux")]
+use std::sync::Mutex;
+#[cfg(target_os = "linux")]
+use tauri::Manager;
 
 use open::show_item_in_folder;
 
