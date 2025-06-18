@@ -96,8 +96,8 @@
 import { ref, onUnmounted } from 'vue'
 import Button from './Button.vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { save } from '@tauri-apps/api/dialog';
-import { invoke } from '@tauri-apps/api/tauri';
+import { save } from '@tauri-apps/plugin-dialog';
+import { invoke } from '@tauri-apps/api/core';
 const value = ref('')
 const error = ref('')
 function clear() {

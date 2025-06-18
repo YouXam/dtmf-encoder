@@ -1,28 +1,14 @@
 {
+  "productName": "dtmf",
+  "version": "0.0.2",
+  "identifier": "com.youxam.homework.dtmf",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "beforeBuildCommand": "pnpm build",
-    "devPath": "http://localhost:1420",
-    "distDir": "../dist"
+    "devUrl": "http://localhost:1420",
+    "frontendDist": "../dist"
   },
-  "package": {
-    "productName": "dtmf",
-    "version": "0.0.2"
-  },
-  "tauri": {
-    "allowlist": {
-      "all": false,
-      "shell": {
-        "all": false,
-        "open": true
-      },
-      "dialog": {
-        "save": true
-      },
-      "fs": {
-        "writeFile": true
-      }
-    },
+  "app": {
     "windows": [
       {
         "title": "Dual tone multi frequency 编码器",
@@ -36,15 +22,14 @@
     ],
     "security": {
       "csp": null
-    },
-    "bundle": {
-      "active": true,
-      "targets": "all",
-      "identifier": "com.youxam.homework.dtmf",
-      "icon": [
-        "icons/dtmf_logo.png",
-        "icons/dtmf_logo.ico"
-      ]
     }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/dtmf_logo.png",
+      "icons/dtmf_logo.ico"
+    ]
   }
 }
