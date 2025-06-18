@@ -83,7 +83,7 @@
         <button
             @click="saveFile"
             :disabled="!value"
-            class="w-full space-x-3 bg-[#3662e3] text-white hover:bg-[#4871e5] active:bg-[#2a4bba] outline-none ring-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#3662e3] disabled:active:bg-[#3662e3]">
+            class="font-medium py-4 px-6 w-full space-x-3 bg-[#3662e3] text-white hover:bg-[#4871e5] active:bg-[#2a4bba] outline-none ring-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#3662e3] disabled:active:bg-[#3662e3]">
             <FontAwesomeIcon :icon="['fas', 'file-arrow-down']" />
             <span>
                 保存
@@ -139,24 +139,34 @@ function append(v: string) {
     }
 }
 async function saveFile() {
-    const filePath = await save({
-        filters: [{
-            name: "DTMF",
-            extensions: ['wav']
-        }]
-    })
-    if (!filePath) return
+    console.log('saveFile called, value:', value.value)
+    
     try {
+        const filePath = await save({
+            filters: [{
+                name: "DTMF",
+                extensions: ['wav']
+            }]
+        })
+        
+        console.log('Selected file path:', filePath)
+        
+        if (!filePath) {
+            console.log('No file path selected, user cancelled dialog')
+            return
+        }
+        
+        console.log('Invoking save command...')
         await invoke('save', { path: filePath, value: value.value })
-    } catch (e) {
-        console.error(e)
-        error.value = '保存失败: ' + ((e as Error).message || (e as any)?.toString() || '未知错误')
-    }
-    try {
+        console.log('Save successful!')
+        
+        console.log('Opening folder...')
         await invoke('show_item_in_folder', { path: filePath })
+        console.log('Folder opened successfully!')
+        
     } catch (e) {
-        console.error(e)
-        error.value = '打开文件夹失败: ' + ((e as Error).message || (e as any)?.toString() || '未知错误') + '，请手动打开'
+        console.error('Error in saveFile:', e)
+        error.value = '保存失败: ' + ((e as Error).message || (e as any)?.toString() || '未知错误')
     }
 }
 function hanlder(e: KeyboardEvent) {
